@@ -1,0 +1,303 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* Reset de Estilos Padrão */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Estilização do Container Principal do Jogo */
+.game {
+    width: 100%;
+    height: 100vh;
+    border-bottom: 30px solid green;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(#87CEEB, #E0F6FF);
+}
+
+/* Estilização do Botão de Início */
+.start {
+    background: green;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5rem;
+    border: none;
+    padding: 1rem 2rem;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 1;
+    border-radius: 8px;
+    font-family: 'Press Start 2P', cursive;
+    transition: background 0.3s;
+}
+
+.start:hover {
+    background: darkgreen;
+}
+
+/* Animação Genérica para Obstáculos */
+@keyframes obstacle-animation {
+    from { right: -100px; }
+    to { right: 100%; }
+}
+
+/* Estilização da Tela de Game Over */
+.game-over {
+    width: 100%;
+    height: 100vh;
+    background: #000000cc;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    z-index: 100;
+}
+
+/* Estilização do Título "Game Over" */
+.game-over h1 {
+    font-size: 4rem;
+    color: white;
+    text-shadow: 4px 4px 8px black;
+    font-family: 'Press Start 2P', cursive;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+/* Estilização do Botão de Reinício */
+.game-over button {
+    background: #f10101;
+    color: white;
+    font-size: 1.5rem;
+    padding: 1rem 2rem;
+    border: none;
+    cursor: pointer;
+    margin-top: 2rem;
+    border-radius: 8px;
+    transition: background 0.3s;
+    font-family: 'Press Start 2P', cursive;
+}
+
+.game-over button:hover {
+    background: #b1a6a6;
+}
+
+/* Estilização do Cano (Pipe) */
+.pipe {
+    position: absolute;
+    bottom: 0;
+    right: -80px;
+    width: 80px;
+    animation: pipe-animation var(--pipe-speed, 4s) infinite linear;
+}
+
+/* Estilização do Mario */
+.mario {
+    width: 150px;
+    position: absolute;
+    bottom: 0;
+    left: 50px;
+    z-index: 5;
+}
+
+/* Estilização das nuvens */
+.clouds {
+    width: 550px;
+    position: absolute;
+    top: 0;
+    animation: clouds-animation var(--cloud-speed, 20s) infinite linear;
+}
+
+/* Estilização do Bloco de Interrogação */
+.question-block {
+    position: absolute;
+    bottom: 0;
+    right: -70px;
+    width: 70px;
+    animation: obstacle-animation var(--obstacle-speed, 3s) infinite linear;
+}
+
+/* Estilização do Goomba */
+.goomba {
+    position: absolute;
+    bottom: 0;
+    right: -80px;
+    width: 80px;
+    animation: obstacle-animation var(--obstacle-speed, 2.5s) infinite linear;
+}
+
+/* Animação das Nuvens */
+@keyframes clouds-animation {
+    from { right: -550px; }
+    to { right: 100%; }
+}
+
+/* Animação do Cano (Pipe) */
+@keyframes pipe-animation {
+    from { right: -80px; }
+    to { right: 100%; }
+}
+
+/* Animação do Pulo do Mario */
+.jump {
+    animation: jump 800ms ease-out;
+}
+
+@keyframes jump {
+    0% { bottom: 0; }
+    40%, 50%, 60% { bottom: 400px; }
+    100% { bottom: 0; }
+}
+
+/* Esconder obstáculos inicialmente */
+.pipe, .question-block, .goomba {
+    display: none;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* HUD do Jogo */
+.game-hud {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: white;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1rem;
+    text-shadow: 2px 2px 4px black;
+    z-index: 10;
+}
+
+.score-display {
+    margin-bottom: 10px;
+}
+
+.speed-display {
+    font-size: 0.8rem;
+    color: #FFD700;
+}
+
+/* Instruções */
+.instructions {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    text-shadow: 2px 2px 4px black;
+    z-index: 10;
+    text-align: center;
+}
+
+/* Responsividade para Mobile */
+@media (max-width: 768px) {
+    .game-over h1 {
+        font-size: 2.5rem;
+    }
+    
+    .start {
+        font-size: 1rem;
+        padding: 0.8rem 1.5rem;
+    }
+    
+    .game-hud {
+        font-size: 0.7rem;
+    }
+
+    .instructions {
+        font-size: 0.6rem;
+    }
+    
+    .mario {
+        width: 120px;
+    }
+    
+    .pipe {
+        width: 60px;
+    }
+    
+    .goomba {
+        width: 60px;
+    }
+    
+    .question-block {
+        width: 50px;
+    }
+    
+    .clouds {
+        width: 400px;
+    }
+}
+
+/* Responsividade para Tablets */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .game-hud {
+        font-size: 0.9rem;
+    }
+    
+    .instructions {
+        font-size: 0.7rem;
+    }
+}
+
+/* Efeitos Visuais Extras */
+.mario {
+    transition: bottom 0.1s ease;
+}
+
+.start:active {
+    transform: translate(-50%, -50%) scale(0.95);
+}
+
+.game-over button:active {
+    transform: scale(0.95);
+}
+
+/* Variáveis CSS para Controle de Velocidade */
+:root {
+    --pipe-speed: 4s;
+    --obstacle-speed: 3s;
+    --cloud-speed: 20s;
+}
+
+/* Estados de Animação */
+.paused {
+    animation-play-state: paused !important;
+}
+
+.running {
+    animation-play-state: running !important;
+}
+
+/* Melhorias de Performance */
+.mario, .pipe, .goomba, .question-block, .clouds {
+    will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Estilo para Modo Escuro (Opcional) */
+@media (prefers-color-scheme: dark) {
+    .game-hud {
+        color: #f0f0f0;
+    }
+    
+    .instructions {
+        color: #f0f0f0;
+    }
+}

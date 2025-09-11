@@ -1,0 +1,176 @@
+/* Seleciona os elementos do jogo */
+const mario = document.querySelector('.mario');
+const pipe = document.querySelector('.pipe');
+const start = document.querySelector('.start');
+const gameOver = document.querySelector('.game-over');
+// Seleciona os novos obstáculos
+const questionBlock = document.querySelector('.question-block');
+const goomba = document.querySelector('.goomba');
+
+/* Seleciona os elementos de áudio */
+const audioStart = document.getElementById('audioStart');
+const audioGameOver = document.getElementById('audioGameOver');
+
+let gameLoop; // Variável para armazenar o loop do jogo
+
+/* Ajusta o volume dos áudios */
+audioStart.volume = 0.5;
+audioGameOver.volume = 0.5;
+
+/* Exibe mensagens no console para verificar se os áudios foram carregados */
+// Adicionado um pequeno atraso para as mensagens de erro/sucesso para evitar poluir o console imediatamente
+setTimeout(() => {
+    audioStart.oncanplaythrough = () => console.log('Áudio do jogo carregado');
+    audioStart.onerror = () => console.error('Erro ao carregar audio_theme.mp3');
+    audioGameOver.oncanplaythrough = () => console.log('Áudio de Game Over carregado');
+    audioGameOver.onerror = () => console.error('Erro ao carregar audio_gameover.mp3');
+}, 500); // Pequeno atraso para as mensagens de console
+
+
+/* Inicia o jogo quando o botão "Iniciar" for clicado */
+const startGame = () => {
+    // Adiciona as classes de animação aos obstáculos
+    pipe.classList.add('pipe-animation');
+    questionBlock.classList.add('obstacle-animation');
+    goomba.classList.add('obstacle-animation');
+
+    // Oculta os botões de iniciar/game over
+    start.style.display = 'none';
+    gameOver.style.display = 'none';
+
+    // Reinicia e reproduz a música do jogo
+    audioStart.currentTime = 0;
+    audioStart.play().catch(error => console.error('Erro ao reproduzir áudio:', error));
+
+    // **Ajuste de Velocidade:** Define o loop do jogo para verificar colisões a cada **30 milissegundos**.
+    // Um valor maior torna a verificação menos frequente, dando uma sensação de jogo mais "lento"
+    // na resposta às colisões e no geral.
+    gameLoop = setInterval(checkCollision, 30);
+};
+
+/* Reinicia o jogo quando o botão "Reiniciar" for clicado */
+const restartGame = () => {
+    gameOver.style.display = 'none';
+
+    // Reseta a posição e animação de todos os obstáculos
+    pipe.style.left = ''; // Limpa o estilo 'left' definido na colisão
+    pipe.classList.add('pipe-animation'); // Adiciona novamente a animação
+
+    questionBlock.style.right = ''; // Limpa o estilo 'right'
+    questionBlock.classList.add('obstacle-animation'); // Adiciona novamente a animação
+
+    goomba.style.right = ''; // Limpa o estilo 'right'
+    goomba.classList.add('obstacle-animation'); // Adiciona novamente a animação
+
+    // Reseta a imagem e o tamanho do Mario
+    mario.src = 'img/mario.gif';
+    mario.style.width = '150px';
+    mario.style.bottom = '0'; // Garante que o Mario volte para o chão
+    mario.style.marginLeft = '0'; // Remove o margin-left que aparece no game over
+
+    // Para e reinicia os áudios
+    audioGameOver.pause();
+    audioGameOver.currentTime = 0; // Garante que comece do início se for tocado novamente
+
+    audioStart.currentTime = 0;
+    audioStart.play().catch(error => console.error('Erro ao reproduzir áudio:', error));
+
+    // **Ajuste de Velocidade:** Reinicia o loop do jogo com o intervalo ajustado para **30ms**.
+    gameLoop = setInterval(checkCollision, 30);
+};
+
+/* Faz o Mario pular ao pressionar espaço ou tocar na tela */
+const jump = () => {
+    // Verifica se o Mario já não está pulando para evitar múltiplos pulos
+    if (!mario.classList.contains('jump')) {
+        mario.classList.add('jump'); // Adiciona a classe 'jump' para iniciar a animação de pulo
+        // Remove a classe 'jump' após 800ms (tempo da animação do pulo no CSS)
+        setTimeout(() => {
+            mario.classList.remove('jump');
+        }, 800);
+    }
+};
+
+/* Verifica colisões entre o Mario e os obstáculos */
+const checkCollision = () => {
+    // Posição do cano (obstáculo principal)
+    const pipePosition = pipe.offsetLeft;
+    // Posição vertical do Mario (convertida para número)
+    const marioPosition = parseFloat(window.getComputedStyle(mario).bottom);
+
+    // Posição do bloco de interrogação
+    const questionBlockPosition = questionBlock.offsetLeft;
+    // Posição do Goomba
+    const goombaPosition = goomba.offsetLeft;
+
+    // Colisão com o cano
+    // Condições: cano entre 0 e 120px da esquerda (próximo ao Mario) E Mario abaixo de 80px (no chão)
+    if (pipePosition <= 120 && pipePosition > 0 && marioPosition < 80) {
+        stopGame(pipePosition, marioPosition); // Chama a função para parar o jogo
+        return; // Sai da função após a colisão para evitar múltiplas detecções
+    }
+
+    // Colisão com o bloco de interrogação
+    // Condições: bloco entre 0 e 120px da esquerda E Mario abaixo de 80px (no chão)
+    if (questionBlockPosition <= 120 && questionBlockPosition > 0 && marioPosition < 80) {
+        stopGame(questionBlockPosition, marioPosition);
+        return;
+    }
+
+    // Colisão com o Goomba
+    // Condições: Goomba entre 0 e 120px da esquerda E Mario abaixo de 60px (Goomba é um pouco menor)
+    if (goombaPosition <= 120 && goombaPosition > 0 && marioPosition < 60) {
+        stopGame(goombaPosition, marioPosition);
+        return;
+    }
+};
+
+/* Função para parar o jogo em caso de colisão */
+const stopGame = (obstaclePosition, marioBottomPosition) => {
+    // Para todas as animações dos obstáculos
+    pipe.classList.remove('pipe-animation');
+    // Fixa o cano na posição da colisão
+    pipe.style.left = `${obstaclePosition}px`;
+
+    questionBlock.classList.remove('obstacle-animation');
+    goomba.classList.remove('obstacle-animation');
+
+    // Altera a imagem do Mario para "Game Over" e ajusta seu tamanho/posição
+    mario.src = 'img/game-over.png';
+    mario.style.width = '80px';
+    mario.style.marginLeft = '50px'; // Move o Mario um pouco para a direita
+    mario.style.bottom = `${marioBottomPosition}px`; // Mantém a posição vertical do Mario na colisão
+
+    // Exibe a tela de "Game Over"
+    gameOver.style.display = 'flex';
+
+    // Para a música do jogo e reproduz o som de "Game Over"
+    audioStart.pause();
+    audioGameOver.currentTime = 0; // Garante que o som de game over comece do início
+    audioGameOver.play().catch(error => console.error('Erro ao reproduzir áudio:', error));
+
+    // Limpa o loop do jogo para parar as verificações de colisão
+    clearInterval(gameLoop);
+};
+
+
+/* Garante que a música só toque após uma interação do usuário */
+// Este evento é crucial para que a música de fundo comece, pois navegadores bloqueiam
+// a reprodução automática de mídia. 'once: true' faz com que ele dispare apenas uma vez.
+document.addEventListener('click', () => {
+    // Tenta reproduzir a música inicial, caso não tenha sido iniciada
+    audioStart.play().catch(error => {
+        console.warn('Áudio de início não pôde ser reproduzido automaticamente:', error);
+    });
+}, { once: true });
+
+
+/* Adiciona eventos para o usuário interagir */
+// Evento para pular com a tecla 'espaço' e iniciar o jogo com 'Enter'
+document.addEventListener('keypress', e => {
+    if (e.key === ' ') jump();
+    if (e.key === 'Enter') startGame();
+});
+
+// Evento para pular ao tocar na tela (útil para dispositivos móveis)
+document.addEventListener('touchstart', () => jump());

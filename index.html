@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Mario Jump Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        /* Reset de Estilos Padrão */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Estilização do Container Principal do Jogo */
+        .game {
+            width: 100%;
+            height: 100vh;
+            border-bottom: 30px solid green;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(#87CEEB, #E0F6FF);
+            transition: all 2s ease-in-out;
+        }
+
+        /* Modo Tarde */
+        .game.afternoon-mode {
+            background: linear-gradient(#FF8C69, #FFE4B5);
+        }
+
+        /* Modo Noturno */
+        .game.night-mode {
+            background: linear-gradient(#1a1a2e, #16213e);
+            border-bottom-color: #333;
+        }
+
+        .game.night-mode .ground {
+            background-color: #333;
+        }
+
+        /* Estilização do Botão de Início */
+        .start {
+            background: green;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            border: none;
+            padding: 1rem 2rem;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 1;
+            border-radius: 8px;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .start:hover {
+            background: darkgreen;
+        }
+
+        /* Estilização da Tela de Game Over */
+        .game-over {
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            z-index: 100;
+            cursor: pointer;
+        }
+
+        /* Estilização do Título "Game Over" */
+        .game-over h1 {
+            font-size: 4rem;
+            color: white;
+            text-shadow: 4px 4px 8px black;
+            font-family: 'Press Start 2P', cursive;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        /* Imagem de Game Over */
+        .game-over-image {
+            width: 200px;
+            height: auto;
+            margin: 1rem 0;
+        }
+
+        /* Texto de instrução para reiniciar */
+        .restart-instruction {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            color: #ccc;
+            margin-top: 1rem;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        /* Estilização do Botão de Reinício - Estilo do T-Rex */
+        .restart-button {
+            width: 72px;
+            height: 64px;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzIiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA3MiA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTM2IDhMMjQgMjBIMzJWNDBIMTZWNTZIMzJWNDBINDBWMjBINDhMMzYgOFoiIGZpbGw9IiM1MzUzNTMiLz4KPC9zdmc+') no-repeat center;
+            background-size: contain;
+            border: none;
+            cursor: pointer;
+            margin-top: 2rem;
+            transition: transform 0.1s ease;
+            filter: invert(1);
+            display: none; /* Escondido por padrão */
+        }
+
+        .restart-button:hover {
+            transform: scale(1.1);
+        }
+
+        .restart-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Score e HiScore - MOVIDO PARA A ESQUERDA */
+        .score-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            text-shadow: 2px 2px 4px black;
+            z-index: 10;
+            text-align: left;
+        }
+
+        .night-mode .score-container {
+            color: #ccc;
+        }
+
+        .afternoon-mode .score-container {
+            color: white;
+        }
+
+        .hi-score {
+            margin-bottom: 10px;
+        }
+
+        .current-score {
+            font-size: 1.2rem;
+        }
+
+        /* Estilização do Mario */
+        .mario {
+            width: 150px;
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            z-index: 5;
+            transition: none;
+        }
+
+        /* Estilização das nuvens */
+        .clouds {
+            width: 550px;
+            position: absolute;
+            top: 20px;
+            animation: clouds-move var(--cloud-duration, 25s) infinite linear;
+        }
+
+        @keyframes clouds-move {
+            from { right: -550px; }
+            to { right: 100%; }
+        }
+
+        /* Animação do Pulo do Mario - Melhorada com queda suave */
+        .jump {
+            animation: jump-smooth 1000ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @keyframes jump-smooth {
+            0% { 
+                bottom: 0; 
+                transform: scale(1);
+            }
+            15% { 
+                bottom: 150px; 
+                transform: scale(1.05);
+            }
+            35% { 
+                bottom: 320px; 
+                transform: scale(1.1);
+            }
+            50% { 
+                bottom: 380px; 
+                transform: scale(1.1);
+            }
+            65% { 
+                bottom: 320px; 
+                transform: scale(1.05);
+            }
+            85% { 
+                bottom: 100px; 
+                transform: scale(1);
+            }
+            100% { 
+                bottom: 0; 
+                transform: scale(1);
+            }
+        }
+
+        /* Estilização dos obstáculos - Sistema do T-Rex */
+        .obstacle {
+            position: absolute;
+            right: -100px;
+            z-index: 3;
+            display: none;
+        }
+
+        .pipe {
+            width: 80px;
+            bottom: 0;
+        }
+
+        .block {
+            width: 70px;
+            bottom: 200px; /* BLOCO SUSPENSO - Mario precisa passar por baixo */
+        }
+
+        .goomba {
+            width: 80px;
+            bottom: 0;
+        }
+
+        /* Lua e Estrelas para modo noturno */
+        .moon {
+            position: absolute;
+            top: 50px;
+            right: 100px;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #f5f5dc 0%, #e6e6e6 100%);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+            z-index: 1;
+        }
+
+        .night-mode .moon {
+            opacity: 1;
+        }
+
+        /* Sol para modo tarde */
+        .sun {
+            position: absolute;
+            top: 30px;
+            right: 80px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #FFD700 0%, #FFA500 100%);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+            z-index: 1;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .sun::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100px;
+            height: 100px;
+            margin-left: -50px;
+            margin-top: -50px;
+            background: conic-gradient(
+                transparent 0deg, 
+                rgba(255, 215, 0, 0.3) 30deg, 
+                transparent 60deg,
+                rgba(255, 215, 0, 0.3) 120deg, 
+                transparent 150deg,
+                rgba(255, 215, 0, 0.3) 210deg, 
+                transparent 240deg,
+                rgba(255, 215, 0, 0.3) 300deg, 
+                transparent 330deg
+            );
+            animation: sunRays 4s linear infinite;
+        }
+
+        @keyframes sunRays {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .afternoon-mode .sun {
+            opacity: 1;
+        }
+
+        /* Nuvens coloridas para o modo tarde */
+        .afternoon-clouds {
+            position: absolute;
+            top: 60px;
+            left: 150px;
+            width: 120px;
+            height: 40px;
+            background: rgba(255, 140, 105, 0.4);
+            border-radius: 40px;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+            z-index: 1;
+        }
+
+        .afternoon-clouds::before,
+        .afternoon-clouds::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 140, 105, 0.4);
+            border-radius: 50px;
+        }
+
+        .afternoon-clouds::before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 10px;
+        }
+
+        .afternoon-clouds::after {
+            width: 60px;
+            height: 60px;
+            top: -35px;
+            right: 15px;
+        }
+
+        .afternoon-mode .afternoon-clouds {
+            opacity: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        }
+
+        .star:nth-child(1) {
+            top: 80px;
+            left: 200px;
+            width: 15px;
+            height: 15px;
+            animation: twinkle 3s infinite;
+        }
+
+        .star:nth-child(2) {
+            top: 120px;
+            right: 300px;
+            width: 12px;
+            height: 12px;
+            animation: twinkle 2s infinite 0.5s;
+        }
+
+        .star:nth-child(3) {
+            top: 60px;
+            left: 400px;
+            width: 10px;
+            height: 10px;
+            animation: twinkle 2.5s infinite 1s;
+        }
+
+        .night-mode .star {
+            opacity: 0.8;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .game-over h1 {
+                font-size: 2rem;
+            }
+            
+            .start {
+                font-size: 1rem;
+                padding: 0.8rem 1.5rem;
+            }
+            
+            .score-container {
+                font-size: 0.6rem;
+            }
+
+            .instructions {
+                font-size: 0.6rem;
+            }
+
+            .game-over-image {
+                width: 150px;
+            }
+
+            .restart-instruction {
+                font-size: 0.6rem;
+            }
+        }
+
+        /* Esconde os players de áudio */
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Elementos de áudio -->
+    <audio id="theme-music" preload="auto" loop>
+      <source src="soung/audio_theme.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="gameover-sound" preload="auto">
+      <source src="soung/audio_gameover.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="game" id="game-container">
+        <!-- Elementos do céu diurno -->
+        <div class="sun"></div>
+        <div class="afternoon-clouds"></div>
+        
+        <!-- Elementos do céu noturno -->
+        <div class="moon"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        
+        <!-- Score Container - MOVIDO PARA A ESQUERDA -->
+        <div class="score-container">
+            <div class="hi-score">Maior Pontuação <span id="hi-score">00000</span></div>
+            <div class="current-score"> Sua Pontuação <span id="current-score">00000</span></div>
+        </div>
+        
+        <!-- Mario -->
+        <img src="img/mario.gif" alt="Mario" class="mario" id="mario">
+        
+        <!-- Nuvens -->
+        <img src="img/clouds.png" alt="Nuvens" class="clouds">
+        
+        <!-- Container de obstáculos (serão criados dinamicamente) -->
+        <div id="obstacles-container"></div>
+        
+        <!-- Botão de Início -->
+        <button class="start" id="start-button">Iniciar</button>
+    
+        <!-- Tela de Game Over -->
+        <div class="game-over" id="game-over">
+            <h1>GAME OVER</h1>
+            <img src="img/game-over.png" alt="Game Over" class="game-over-image" id="game-over-image">
+            <div style="font-family: 'Press Start 2P', cursive; font-size: 1rem; margin: 1rem 0; color: #ccc;">
+                SCORE: <span id="final-score">00000</span>
+            </div>
+            <div class="restart-instruction">Clique na tela para reiniciar</div>
+            <button class="restart-button" id="restart-btn" title="Restart"></button>
+        </div>
+    </div>
+
+    <script>
+        // Referências dos elementos de áudio
+        const themeMusic = document.getElementById("theme-music");
+        const gameOverSound = document.getElementById("gameover-sound");
+
+        // Configurações do jogo - ajustadas para velocidade gradual
+        const GAME_CONFIG = {
+            ACCELERATION: 0.000120, // Aumentado para acelerar mais gradualmente
+            BG_CLOUD_SPEED: 0.2,
+            CLEAR_TIME: 3000,
+            GAMEOVER_CLEAR_TIME: 750,
+            GAP_COEFFICIENT: 0.6,
+            GRAVITY: 0.6,
+            INITIAL_JUMP_VELOCITY: 14,
+            MAX_SPEED: 5000000000, // Aumentado o limite máximo
+            MIN_JUMP_HEIGHT: 35,
+            SPEED: 12, // Velocidade inicial
+            SPEED_DROP_COEFFICIENT: 5,
+            NIGHT_MODE_INTERVAL: 300, // Alterado para 300 pontos (ciclo completo de 3 fases: manhã/tarde/noite)
+            MAX_OBSTACLE_DUPLICATION: 2,
+            JUMP_DURATION: 900, // Duração do pulo em ms
+            POINTS_PER_OBSTACLE: 15 // Pontos fixos por obstáculo ultrapassado
+        };
+
+        // Tipos de obstáculos com hitboxes melhoradas
+        const OBSTACLE_TYPES = [
+            {
+                type: 'PIPE',
+                src: 'img/pipe.png',
+                width: 80,
+                height: 120,
+                multipleSpeed: 4,
+                minGap: 120,
+                minSpeed: 0,
+                bottomOffset: 0,
+                // Hitbox muito mais precisa para o cano
+                collisionBoxes: [
+                    // Parte superior do cano (mais estreita)
+                    { x: 15, y: 80, width: 50, height: 40 },
+                    // Parte inferior do cano (base mais larga)
+                    { x: 5, y: 0, width: 70, height: 80 }
+                ]
+            },
+            {
+                type: 'GOOMBA', 
+                src: 'img/goomba.gif',
+                width: 80,
+                height: 80,
+                multipleSpeed: 7,
+                minGap: 150,
+                minSpeed: 1,
+                bottomOffset: 0,
+                collisionBoxes: [
+                    { x: 20, y: 15, width: 40, height: 50 }
+                ]
+            },
+            {
+                type: 'block',
+                src: 'img/block.png',
+                width: 70,
+                height: 70,
+                multipleSpeed: 999,
+                minGap: 140,
+                minSpeed: 2,
+                bottomOffset: 200, // BLOCO SUSPENSO - 200px do chão
+                collisionBoxes: [
+                    // Hitbox ajustada para bloco suspenso (Mario morre se pular e bater)
+                    { x: 10, y: 0, width: 50, height: 60 }
+                ]
+            }
+        ];
+
+        // Variáveis globais do jogo
+        let gameState = {
+            isGameOver: false,
+            gameStarted: false,
+            score: 0,
+            hiScore: parseInt(localStorage.getItem('mario-hi-score') || '0'),
+            currentSpeed: GAME_CONFIG.SPEED,
+            level: 1,
+            dayPhase: 'morning', // morning, afternoon, night
+            gameLoop: null,
+            runningTime: 0,
+            lastNightToggle: 0,
+            obstacles: [],
+            obstacleHistory: [],
+            nextObstacleId: 0,
+            // Variáveis para o sistema de pulo suave
+            marioState: {
+                isJumping: false,
+                jumpStartTime: 0,
+                groundLevel: 0
+            }
+        };
+
+        // Elementos do DOM
+        const elements = {
+            gameContainer: document.getElementById('game-container'),
+            mario: document.getElementById('mario'),
+            startButton: document.getElementById('start-button'),
+            gameOverScreen: document.getElementById('game-over'),
+            gameOverImage: document.getElementById('game-over-image'),
+            currentScore: document.getElementById('current-score'),
+            hiScore: document.getElementById('hi-score'),
+            finalScore: document.getElementById('final-score'),
+            restartBtn: document.getElementById('restart-btn'),
+            obstaclesContainer: document.getElementById('obstacles-container')
+        };
+
+        // Inicializar HI-SCORE na tela
+        elements.hiScore.textContent = String(gameState.hiScore).padStart(5, '0');
+
+        // Funções de áudio
+        function playThemeMusic() {
+            try {
+                themeMusic.currentTime = 0;
+                themeMusic.volume = 0.4; // Volume mais baixo para a música de fundo
+                themeMusic.play().catch(error => {
+                    console.log('Erro ao tocar música tema:', error);
+                });
+            } catch (error) {
+                console.log('Erro ao reproduzir áudio tema:', error);
+            }
+        }
+
+        function stopThemeMusic() {
+            try {
+                themeMusic.pause();
+                themeMusic.currentTime = 0;
+            } catch (error) {
+                console.log('Erro ao parar música tema:', error);
+            }
+        }
+
+        function playGameOverSound() {
+            try {
+                gameOverSound.currentTime = 0;
+                gameOverSound.volume = 0.6; // Volume um pouco mais alto para o game over
+                gameOverSound.play().catch(error => {
+                    console.log('Erro ao tocar som de game over:', error);
+                });
+            } catch (error) {
+                console.log('Erro ao reproduzir áudio game over:', error);
+            }
+        }
+
+        // Classe Obstáculo melhorada com suporte a bottomOffset
+        class Obstacle {
+            constructor(type, speed) {
+                this.type = type;
+                this.typeConfig = OBSTACLE_TYPES.find(t => t.type === type);
+                this.speed = speed;
+                this.xPos = window.innerWidth + 10;
+                this.yPos = this.typeConfig.bottomOffset || 0;
+                this.width = this.typeConfig.width;
+                this.height = this.typeConfig.height;
+                this.gap = this.getGap(speed);
+                this.remove = false;
+                this.scored = false;
+                this.element = null;
+                this.id = gameState.nextObstacleId++;
+                
+                this.createElement();
+                this.init();
+            }
+
+            getGap(speed) {
+                const minGap = Math.round(this.width * speed + this.typeConfig.minGap * GAME_CONFIG.GAP_COEFFICIENT);
+                const maxGap = Math.round(minGap * 1.5);
+                return Math.floor(Math.random() * (maxGap - minGap + 1)) + minGap;
+            }
+
+            createElement() {
+                this.element = document.createElement('img');
+                this.element.src = this.typeConfig.src;
+                this.element.className = `obstacle ${this.type.toLowerCase()}`;
+                this.element.style.width = this.width + 'px';
+                this.element.style.height = this.height + 'px';
+                this.element.style.position = 'absolute';
+                this.element.style.bottom = this.yPos + 'px';
+                this.element.style.right = '-' + this.width + 'px';
+                this.element.style.display = 'block';
+                this.element.style.zIndex = '3';
+                
+                elements.obstaclesContainer.appendChild(this.element);
+            }
+
+            init() {
+                this.draw();
+            }
+
+            draw() {
+                if (this.element) {
+                    this.element.style.right = (window.innerWidth - this.xPos) + 'px';
+                }
+            }
+
+            update(deltaTime, speed) {
+                if (!this.remove) {
+                    const pixelSpeed = (speed * 60) / 1000;
+                    this.xPos -= Math.floor(pixelSpeed * deltaTime);
+                    
+                    this.draw();
+                    
+                    if (!this.isVisible()) {
+                        this.remove = true;
+                    }
+                }
+            }
+
+            isVisible() {
+                return this.xPos + this.width > 0;
+            }
+
+            // Método para verificar colisão com múltiplas hitboxes
+            checkCollisionWith(marioRect) {
+                for (let box of this.typeConfig.collisionBoxes) {
+                    const obstacleBox = {
+                        left: this.xPos + box.x,
+                        right: this.xPos + box.x + box.width,
+                        top: this.yPos + box.y,
+                        bottom: this.yPos + box.y + box.height
+                    };
+
+                    // Verificar sobreposição
+                    if (marioRect.left < obstacleBox.right && 
+                        marioRect.right > obstacleBox.left && 
+                        marioRect.top < obstacleBox.bottom && 
+                        marioRect.bottom > obstacleBox.top) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            cleanup() {
+                if (this.element && this.element.parentNode) {
+                    this.element.parentNode.removeChild(this.element);
+                }
+            }
+        }
+
+        // Sistema de pulo suave
+        function updateMarioPosition(currentTime) {
+            if (gameState.marioState.isJumping) {
+                const elapsed = currentTime - gameState.marioState.jumpStartTime;
+                const progress = Math.min(elapsed / GAME_CONFIG.JUMP_DURATION, 1);
+                
+                // Curva de pulo mais suave usando função cúbica
+                let jumpHeight;
+                if (progress <= 0.5) {
+                    // Subida - curva acelerada
+                    const t = progress * 2;
+                    jumpHeight = 380 * (1 - Math.pow(1 - t, 3));
+                } else {
+                    // Descida - curva desacelerada (mais suave)
+                    const t = (progress - 0.5) * 2;
+                    jumpHeight = 380 * Math.pow(1 - t, 2);
+                }
+                
+                elements.mario.style.bottom = jumpHeight + 'px';
+                
+                // Finalizar pulo
+                if (progress >= 1) {
+                    gameState.marioState.isJumping = false;
+                    elements.mario.style.bottom = '0px';
+                    elements.mario.classList.remove('jump');
+                }
+            }
+        }
+
+        // Função para obter número aleatório
+        function getRandomNum(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Função para iniciar o jogo - COM ÁUDIO
+        function startGame() {
+            if (gameState.gameStarted || gameState.isGameOver) return;
+            
+            gameState.gameStarted = true;
+            gameState.isGameOver = false;
+            gameState.score = 0;
+            gameState.currentSpeed = GAME_CONFIG.SPEED;
+            gameState.level = 1;
+            gameState.runningTime = 0;
+            gameState.lastNightToggle = 0;
+            gameState.dayPhase = 'morning';
+            gameState.obstacles = [];
+            gameState.obstacleHistory = [];
+            gameState.marioState.isJumping = false;
+            
+            updateScore();
+            
+            elements.startButton.style.display = 'none';
+            
+            // INICIAR MÚSICA TEMA QUANDO O JOGO COMEÇAR
+            playThemeMusic();
+            
+            startGameLoop();
+            
+            console.log('Game Started with Theme Music!');
+        }
+
+        // Função para reiniciar o jogo
+        function restartGame() {
+            gameState.isGameOver = false;
+            gameState.gameStarted = false;
+            gameState.score = 0;
+            gameState.currentSpeed = GAME_CONFIG.SPEED;
+            gameState.level = 1;
+            gameState.runningTime = 0;
+            gameState.isNightMode = false;
+            gameState.dayPhase = 'morning';
+            gameState.lastNightToggle = 0;
+            gameState.marioState.isJumping = false;
+            
+            updateScore();
+            
+            elements.gameOverScreen.style.display = 'none';
+            
+            resetMario();
+            clearAllObstacles();
+            resetDayPhase();
+            
+            if (gameState.gameLoop) {
+                cancelAnimationFrame(gameState.gameLoop);
+                gameState.gameLoop = null;
+            }
+            
+            setTimeout(() => {
+                startGame();
+            }, 100);
+        }
+
+        // Função para limpar todos os obstáculos
+        function clearAllObstacles() {
+            gameState.obstacles.forEach(obstacle => obstacle.cleanup());
+            gameState.obstacles = [];
+            gameState.obstacleHistory = [];
+            
+            if (elements.obstaclesContainer) {
+                elements.obstaclesContainer.innerHTML = '';
+            }
+        }
+
+        // Função para verificar duplicação de obstáculos 
+        function duplicateObstacleCheck(nextObstacleType) {
+            let duplicateCount = 0;
+            
+            for (let i = 0; i < gameState.obstacleHistory.length; i++) {
+                duplicateCount = gameState.obstacleHistory[i] === nextObstacleType ? duplicateCount + 1 : 0;
+            }
+            return duplicateCount >= GAME_CONFIG.MAX_OBSTACLE_DUPLICATION;
+        }
+
+        // Função para adicionar novo obstáculo 
+        function addNewObstacle() {
+            const obstacleTypeIndex = getRandomNum(0, OBSTACLE_TYPES.length - 1);
+            const obstacleType = OBSTACLE_TYPES[obstacleTypeIndex];
+            
+            if (duplicateObstacleCheck(obstacleType.type) || gameState.currentSpeed < obstacleType.minSpeed) {
+                addNewObstacle();
+                return;
+            }
+            
+            const obstacle = new Obstacle(obstacleType.type, gameState.currentSpeed);
+            gameState.obstacles.push(obstacle);
+            
+            gameState.obstacleHistory.unshift(obstacleType.type);
+            if (gameState.obstacleHistory.length > GAME_CONFIG.MAX_OBSTACLE_DUPLICATION) {
+                gameState.obstacleHistory.splice(GAME_CONFIG.MAX_OBSTACLE_DUPLICATION);
+            }
+        }
+
+        // Função para atualizar obstáculos
+        function updateObstacles(deltaTime) {
+            const updatedObstacles = [];
+            
+            for (let obstacle of gameState.obstacles) {
+                obstacle.update(deltaTime, gameState.currentSpeed);
+                
+                if (!obstacle.remove) {
+                    updatedObstacles.push(obstacle);
+                } else {
+                    obstacle.cleanup();
+                }
+            }
+            
+            gameState.obstacles = updatedObstacles;
+            
+            if (gameState.obstacles.length > 0) {
+                const lastObstacle = gameState.obstacles[gameState.obstacles.length - 1];
+                
+                if (lastObstacle && lastObstacle.isVisible() && 
+                    lastObstacle.xPos + lastObstacle.width + lastObstacle.gap < window.innerWidth) {
+                    addNewObstacle();
+                }
+            } else if (gameState.runningTime > GAME_CONFIG.CLEAR_TIME) {
+                addNewObstacle();
+            }
+        }
+
+        // Função para reset do Mario
+        function resetMario() {
+            if (elements.mario) {
+                elements.mario.className = 'mario';
+                elements.mario.src = 'img/mario.gif';
+                elements.mario.style.bottom = '0px';
+                elements.mario.style.left = '50px';
+                elements.mario.style.width = '150px';
+                gameState.marioState.isJumping = false;
+            }
+        }
+
+        // Função para pulo do Mario - melhorada
+        function jump() {
+            if (gameState.isGameOver) return;
+            
+            if (!gameState.gameStarted) {
+                startGame();
+                return;
+            }
+            
+            // Só pular se não estiver pulando
+            if (!gameState.marioState.isJumping) {
+                gameState.marioState.isJumping = true;
+                gameState.marioState.jumpStartTime = performance.now();
+                elements.mario.classList.add('jump');
+            }
+        }
+
+        // Função para iniciar o loop do jogo
+        function startGameLoop() {
+            let lastTime = performance.now();
+            
+            function gameLoop() {
+                if (gameState.isGameOver) return;
+                
+                const currentTime = performance.now();
+                const deltaTime = currentTime - lastTime;
+                lastTime = currentTime;
+                
+                gameState.runningTime += deltaTime;
+                
+                // Atualizar posição do Mario
+                updateMarioPosition(currentTime);
+                
+                // Atualizar obstáculos
+                updateObstacles(deltaTime);
+                
+                // Verificar colisões
+                checkCollision();
+                
+                // Atualizar velocidade gradualmente baseado no tempo
+                updateGameSpeed(deltaTime);
+                
+                // Atualizar modo do dia (manhã/tarde/noite)
+                updateDayPhase();
+                
+                gameState.gameLoop = requestAnimationFrame(gameLoop);
+            }
+            
+            gameState.gameLoop = requestAnimationFrame(gameLoop);
+        }
+
+        // Função para atualizar velocidade do jogo - baseada no tempo corrido
+        function updateGameSpeed(deltaTime) {
+            if (gameState.currentSpeed < GAME_CONFIG.MAX_SPEED) {
+                // Aumenta velocidade gradualmente baseado no tempo decorrido
+                gameState.currentSpeed += GAME_CONFIG.ACCELERATION * deltaTime;
+                gameState.currentSpeed = Math.min(gameState.currentSpeed, GAME_CONFIG.MAX_SPEED);
+            }
+        }
+
+        // Função para alternar entre as fases do dia baseado na pontuação
+        function updateDayPhase() {
+            // Calcular em qual intervalo de 300 pontos estamos
+            const currentInterval = Math.floor(gameState.score / GAME_CONFIG.NIGHT_MODE_INTERVAL);
+            const lastInterval = Math.floor(gameState.lastNightToggle / GAME_CONFIG.NIGHT_MODE_INTERVAL);
+            
+            if (currentInterval > lastInterval) {
+                gameState.lastNightToggle = gameState.score;
+                
+                // Determinar a fase do dia baseado no ciclo
+                const phaseIndex = currentInterval % 3;
+                const phases = ['morning', 'afternoon', 'night'];
+                const newPhase = phases[phaseIndex];
+                
+                if (gameState.dayPhase !== newPhase) {
+                    gameState.dayPhase = newPhase;
+                    
+                    // Remover todas as classes de modo
+                    elements.gameContainer.classList.remove('afternoon-mode', 'night-mode');
+                    
+                    // Aplicar a classe correspondente à nova fase
+                    if (newPhase === 'afternoon') {
+                        elements.gameContainer.classList.add('afternoon-mode');
+                    } else if (newPhase === 'night') {
+                        elements.gameContainer.classList.add('night-mode');
+                    }
+                    
+                    console.log(`Fase do dia: ${newPhase.toUpperCase()} - Score: ${gameState.score}`);
+                }
+            }
+        }
+
+        // Função para resetar fase do dia
+        function resetDayPhase() {
+            elements.gameContainer.classList.remove('afternoon-mode', 'night-mode');
+            gameState.dayPhase = 'morning';
+        }
+
+        // Sistema de colisão melhorado com múltiplas hitboxes
+        function checkCollision() {
+            if (gameState.isGameOver || !elements.mario || !gameState.gameStarted) return;
+
+            // Obter posição atual do Mario (considerando animação de pulo)
+            const marioBottom = parseFloat(elements.mario.style.bottom) || 0;
+            const marioLeft = 50;
+            const marioWidth = 100; // Hitbox do Mario reduzida
+            const marioHeight = 100;
+
+            // Criar retângulo de colisão do Mario com margens menores
+            const marioRect = {
+                left: marioLeft + 15, // Margem interna
+                right: marioLeft + marioWidth - 15,
+                top: marioBottom + 10,
+                bottom: marioBottom + marioHeight - 5
+            };
+
+            for (let obstacle of gameState.obstacles) {
+                if (obstacle.element && obstacle.isVisible()) {
+                    // Verificar colisão usando o sistema de múltiplas hitboxes
+                    if (obstacle.checkCollisionWith(marioRect)) {
+                        stopGame();
+                        return;
+                    }
+                    
+                    // SISTEMA DE PONTUAÇÃO ATUALIZADO - 15 pontos fixos por obstáculo
+                    if (obstacle.xPos + obstacle.width < marioLeft && !obstacle.scored) {
+                        obstacle.scored = true;
+                        gameState.score += GAME_CONFIG.POINTS_PER_OBSTACLE;
+                        updateScore();
+                    }
+                }
+            }
+        }
+
+        // Função para parar o jogo - COM ÁUDIO
+        function stopGame() {
+            if (gameState.isGameOver) return;
+            
+            gameState.isGameOver = true;
+            gameState.gameStarted = false;
+            gameState.marioState.isJumping = false;
+            
+            if (gameState.gameLoop) {
+                cancelAnimationFrame(gameState.gameLoop);
+                gameState.gameLoop = null;
+            }
+            
+            // PARAR MÚSICA TEMA E TOCAR SOM DE GAME OVER
+            stopThemeMusic();
+            playGameOverSound();
+            
+            // Alterar sprite do Mario para game over
+            if (elements.mario) {
+                elements.mario.src = 'img/game-over.png';
+                elements.mario.style.width = '120px';
+            }
+            
+            // Atualizar Hi-Score se necessário
+            if (gameState.score > gameState.hiScore) {
+                gameState.hiScore = gameState.score;
+                localStorage.setItem('mario-hi-score', gameState.hiScore.toString());
+                elements.hiScore.textContent = String(gameState.hiScore).padStart(5, '0');
+            }
+            
+            // Mostrar tela de game over
+            elements.finalScore.textContent = String(gameState.score).padStart(5, '0');
+            elements.gameOverScreen.style.display = 'flex';
+            
+            console.log(`Game Over with Sound! Final Score: ${gameState.score}`);
+        }
+
+        // Função para atualizar pontuação
+        function updateScore() {
+            if (elements.currentScore) {
+                elements.currentScore.textContent = String(gameState.score).padStart(5, '0');
+            }
+        }
+
+        // Event listeners para controles
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                jump();
+            }
+            if (e.code === 'Enter') {
+                e.preventDefault();
+                if (gameState.isGameOver) {
+                    restartGame();
+                } else if (!gameState.gameStarted) {
+                    startGame();
+                }
+            }
+        });
+
+        // Event listener para o botão de reiniciar
+        elements.restartBtn.addEventListener('click', restartGame);
+        elements.startButton.addEventListener('click', startGame);
+
+        // Event listener para clicar na tela de game over para reiniciar
+        elements.gameOverScreen.addEventListener('click', (e) => {
+            e.preventDefault();
+            restartGame();
+        });
+
+        // Controle por toque (mobile)
+        document.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameState.isGameOver) {
+                restartGame();
+            } else if (!gameState.gameStarted) {
+                startGame();
+            } else {
+                jump();
+            }
+        });
+
+        // Prevenir scroll em dispositivos móveis
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        // Pausar jogo quando perde o foco
+        window.addEventListener('blur', () => {
+            if (gameState.gameStarted && !gameState.isGameOver && gameState.gameLoop) {
+                cancelAnimationFrame(gameState.gameLoop);
+                gameState.gameLoop = null;
+                // Pausar música quando perde o foco
+                if (themeMusic && !themeMusic.paused) {
+                    themeMusic.pause();
+                }
+            }
+        });
+
+        // Retomar jogo quando ganha o foco
+        window.addEventListener('focus', () => {
+            if (gameState.gameStarted && !gameState.isGameOver && !gameState.gameLoop) {
+                startGameLoop();
+                // Retomar música quando ganha o foco
+                if (themeMusic.paused) {
+                    themeMusic.play().catch(error => {
+                        console.log('Erro ao retomar música:', error);
+                    });
+                }
+            }
+        });
+
+        // Redimensionar jogo
+        window.addEventListener('resize', () => {
+            gameState.obstacles.forEach(obstacle => {
+                if (obstacle.element) {
+                    obstacle.draw();
+                }
+            });
+        });
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🍄 Super Mario Jump Game - COM ÁUDIO INTEGRADO!');
+            console.log('📋 Controls:');
+            console.log('   - SPACE: Jump');
+            console.log('   - ENTER: Start/Restart');
+            console.log('   - TOUCH: Jump/Start (Mobile)');
+            console.log('   - CLICK on Game Over screen: Restart');
+            console.log('🎮 Configurações atualizadas:');
+            console.log('   🎵 ÁUDIO AUTOMÁTICO: Música tema inicia com o jogo, som de game over quando morre');
+            console.log('   ✅ Pontuação fixa: 15 pontos por obstáculo');
+            console.log('   ✅ 3 fases do dia a cada 300 pontos:');
+            console.log('     🌅 0-299: MANHÃ (céu azul)');
+            console.log('     🌇 300-599: TARDE (céu laranja + sol)');
+            console.log('     🌙 600-899: NOITE (céu escuro + lua + estrelas)');
+            console.log('   🚀 VELOCIDADE INFINITA: Aumenta continuamente até o game over!');
+            console.log('   ✅ Sistema de colisão preciso mantido');
+            console.log('   🟧 BLOCO SUSPENSO: Mario deve passar por BAIXO - se pular e bater, MORRE!');
+            console.log('   📍 Pontuação movida para a ESQUERDA');
+            
+            resetMario();
+            clearAllObstacles();
+            resetDayPhase();
+            updateScore();
+        });
+    </script>
+</body>
+</html>
