@@ -35,16 +35,14 @@ Responsividade para diferentes tamanhos de tela
 
 Aqui está uma visão geral de como o projeto está organizado no repositório:
 
-SuperMarioJumpGame/ <>
-├── index.html              # Arquivo principal do jogo<br>
-├── css/                    # Estilos e assets de estilo<br>
-│    ├── (arquivos de CSS)<br>
-├── img/                    # Imagens, sprites, obstáculos etc.<br>
-├── audio/                  # Sons do tema e do game over<br>
-├── js/                     # Scripts JavaScript com lógica do jogo<br>
-├── README.md               # Este documento<br>
-└── LICENSE                 # Licença <br>
-
+SuperMarioJumpGame/ <br>
+├── index.html <br>            
+├── css/ <br>           
+├── img/   <br>.                
+├── audio/  <br>               
+├── js/     <br>                
+├── README.md <br>         
+└── LICENSE <br>           
 
 Ajuste conforme seus diretórios reais.
 
