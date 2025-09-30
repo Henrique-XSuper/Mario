@@ -1,8 +1,9 @@
-🏃‍♂️ Super Mario Jump Game
+# 🏃‍♂️ Super Mario Jump Game
 
 Uma versão de navegador de um jogo de corrida infinita inspirado nos clássicos de plataforma. O objetivo é controlar o Mario, saltar obstáculos e obter a maior pontuação possível, enfrentando modos de dia, tarde e noite, com desafios crescentes.
 
-🚀 Tecnologias
+---
+## 🚀 Tecnologias
 
 HTML5
 
@@ -12,7 +13,8 @@ JavaScript puro
 
 Uso de assets gráficos (sprites, imagens) e sons para tema + game over
 
-🎯 Funcionalidades
+---
+## 🎯 Funcionalidades
 
 Início do jogo por botão “Iniciar”
 
@@ -28,34 +30,32 @@ Tela de Game Over com opção de reiniciar
 
 Responsividade para diferentes tamanhos de tela
 
-📂 Estrutura do Projeto
+---
+## 📂 Estrutura do Projeto
 
 Aqui está uma visão geral de como o projeto está organizado no repositório:
 
-SuperMarioJumpGame/
-├── index.html              # Arquivo principal do jogo
-├── css/                    # Estilos e assets de estilo
-│    ├── (arquivos de CSS)
-├── img/                    # Imagens, sprites, obstáculos etc.
-├── audio/                  # Sons do tema e do game over
-├── js/                     # Scripts JavaScript com lógica do jogo
-├── README.md               # Este documento
-└── LICENSE                 # Licença (por exemplo MIT)
+SuperMarioJumpGame/ <>
+├── index.html              # Arquivo principal do jogo<br>
+├── css/                    # Estilos e assets de estilo<br>
+│    ├── (arquivos de CSS)<br>
+├── img/                    # Imagens, sprites, obstáculos etc.<br>
+├── audio/                  # Sons do tema e do game over<br>
+├── js/                     # Scripts JavaScript com lógica do jogo<br>
+├── README.md               # Este documento<br>
+└── LICENSE                 # Licença <br>
 
 
 Ajuste conforme seus diretórios reais.
 
-🧩 Como Jogar / Usar Localmente
+---
+## 🧩 Como Jogar / Usar Localmente
 
-Clone o repositório para sua máquina:
-
-git clone https://github.com/seu-usuario/seu-repositorio.git
-
+Abra o Link disponibilizado abaixo da descrição básica 
 
 Acesse a pasta do projeto:
 
 cd SuperMarioJumpGame
-
 
 Abra o index.html em um navegador moderno (Chrome, Firefox, Edge).
 
@@ -69,7 +69,8 @@ Clique / toque (se for versão mobile)
 
 Evite obstáculos. Quando colidir, o jogo acaba e exibe tela de Game Over. Clique ou toque para reiniciar.
 
-📈 Estatísticas & Progresso
+---
+## 📈 Estatísticas & Progresso
 
 O jogo mostra pontuação atual e Hi‑Score (melhor pontuação registrada).
 
@@ -77,11 +78,12 @@ Modo dia/tarde/noite muda automaticamente baseado na pontuação ou tempo de jog
 
 Aumentos graduais de velocidade ou dificuldade conforme você acumula pontos.
 
-🔧 Configurações Possíveis & Melhorias Futuras
+---
+## 🔧 Configurações Possíveis & Melhorias Futuras
 
 Aqui algumas ideias de melhorias ou customizações que você (ou outros contribuidores) podem adicionar:
 
-Adicionar persistência de Hi‑Score usando localStorage (se ainda não estiver implementado)
+Adicionar persistência de Hi‑Score usando localStorage 
 
 Ajustar física de pulo para ser ainda mais suave
 
@@ -94,3 +96,8 @@ Adicionar efeitos visuais ou música adicionais
 Níveis ou progressão entre fases (não só obstáculos infinitos)
 
 Interface de configurações (ex: mutar som, escolher tema visual)
+---
+## Licença
+
+este projeto esta sobre a licença MIT
+---
